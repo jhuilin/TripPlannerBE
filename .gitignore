@@ -32,5 +32,8 @@ build/
 ### VS Code ###
 .vscode/
 
+### Gradle ###
+.gradle/
+
 # Local secrets
 src/main/resources/application-local.yml
