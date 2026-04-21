@@ -1,17 +1,25 @@
 # TripPlanner Backend — Claude Context
 
 ## Project Overview
-Spring Boot 3.5 / Java 21 REST API. AI-powered trip planning using Anthropic Claude. Google-only OAuth2 auth (no email/password). PostgreSQL via JPA.
+Spring Boot 3.5 / Java 21 REST API. AI-powered trip planning using OpenAI GPT-4o. Google-only OAuth2 auth. PostgreSQL via JPA. **Build system: Gradle (Kotlin DSL).**
 
 ## Build & Run
 
 ```bash
 # Java 21 is at this path (installed via Homebrew, not the system default)
-JAVA_HOME=/opt/homebrew/Cellar/openjdk@21/21.0.10/libexec/openjdk.jdk/Contents/Home ./mvnw compile
-JAVA_HOME=/opt/homebrew/Cellar/openjdk@21/21.0.10/libexec/openjdk.jdk/Contents/Home ./mvnw spring-boot:run
+JAVA_HOME=/opt/homebrew/Cellar/openjdk@21/21.0.10/libexec/openjdk.jdk/Contents/Home ./gradlew compileJava
+JAVA_HOME=/opt/homebrew/Cellar/openjdk@21/21.0.10/libexec/openjdk.jdk/Contents/Home ./gradlew bootRun
 ```
 
-Always prefix Maven commands with the JAVA_HOME above — the system default is Java 8.
+Always prefix Gradle commands with the JAVA_HOME above — the system default is Java 8.
+
+## Trip Creation Flow (Wizard)
+
+1. User fills 6-step wizard: destination → dates → categories (up to 3) → intensity → budget → preview
+2. POST /api/trips/generate — SSE streaming endpoint
+3. Backend calls OpenAI GPT-4o; each stop is streamed as an SSE `stop` event as it's generated
+4. Final SSE `complete` event carries the saved trip ID
+5. After generation: user selects restaurants and hotels per stop
 
 ## Auth Architecture
 
@@ -25,18 +33,18 @@ Always prefix Maven commands with the JAVA_HOME above — the system default is 
 - Refresh token: 30 days (UUID stored in `refresh_tokens` table, rotated on each use)
 
 **Endpoints:**
-- `POST /api/auth/google` — public, returns `{ token, refreshToken, email, name }`
+- `POST /api/auth/google` — public
 - `POST /api/auth/refresh` — public, rotates refresh token
 - `POST /api/auth/logout` — authenticated, deletes refresh token from DB
 
 ## Key Design Decisions
 
-- `TripStatus` is **computed dynamically** in `TripService.computeStatus()` from stop dates — it is NOT reliably stored in the DB. Never filter DB queries by the `status` column.
-- `parseAndSaveTrip()` lives in `TripService` (not `ChatController`) so it can be `@Transactional`.
-- `ChatController` uses an in-memory `ConcurrentHashMap` for conversation history keyed by `userId:tripId`. Sessions are cleared after `/generate`.
-- `ClaudeService` uses `Model.of("claude-sonnet-4-6")` — model specified as string because the SDK enum constants change between versions.
+- `TripStatus` is **computed dynamically** in `TripService.computeStatus()` from stop dates — never filter DB queries by the `status` column.
+- `parseAndSaveFromStops()` lives in `TripService` so it can be `@Transactional`.
+- OpenAI streaming: `OpenAIService.generateTripStream()` accumulates tokens, detects `---STOP---` delimiter to emit each stop as SSE, then saves trip at end.
 - `GoogleIdTokenVerifier` is initialized once in `@PostConstruct`, not per-request.
 - `ObjectMapper` is injected as a Spring bean (not `new ObjectMapper()` inline).
+- All trip operations use `findByIdAndUserId(tripId, userId)` — never `findById()` alone.
 
 ## Notifications
 
@@ -44,36 +52,36 @@ Always prefix Maven commands with the JAVA_HOME above — the system default is 
 - Notifies users **3 days before** trip start date
 - Deduplication: skips if a pending (unsent) notification already exists for the trip
 
-## Ownership / Security Pattern
-
-All trip operations use `findByIdAndUserId(tripId, user.getId())` — never `findById()` alone. This prevents users from accessing or modifying other users' data. `parseAndSaveTrip()` also enforces this for re-generation.
-
 ## CORS
 
-Configured in `SecurityConfig`. Allowed origins are set via `CORS_ALLOWED_ORIGINS` env var (default: `http://localhost:3000`). Can be comma-separated for multiple origins.
+Configured in `SecurityConfig`. Allowed origins via `CORS_ALLOWED_ORIGINS` env var (default: `http://localhost:3000`).
 
 ## Local Config
 
-Secrets go in `src/main/resources/application-local.yml` (gitignored). The `local` Spring profile is active by default. Do not add secrets to `application.yml`.
+Secrets go in `src/main/resources/application-local.yml` (gitignored). The `local` Spring profile is active by default.
 
-Required secrets: `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET` (Base64, min 32 bytes), `ANTHROPIC_API_KEY`, `GOOGLE_CLIENT_ID`.
+Required secrets: `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET` (Base64, min 32 bytes), `OPENAI_API_KEY`, `GOOGLE_CLIENT_ID`.
 
 ## Package Structure
 
 ```
 com.tripplanner
 ├── config/       SecurityConfig, AppConfig
-├── controller/   Auth, Trip, Packing, Notification, Chat
-├── service/      Auth, Trip, Packing, Notification, Claude
-├── entity/       User, Trip, TripStop, TripStopCost, PackingItem, Notification, RefreshToken
+├── controller/   Auth, Trip, Packing, Notification, Restaurant, Hotel
+├── service/      Auth, Trip, Packing, Notification, OpenAI, Restaurant, Hotel
+├── entity/       User, Trip, TripStop, TripStopCost, PackingItem, Notification, RefreshToken, Restaurant, Hotel
 ├── repository/   Spring Data JPA interfaces
 ├── dto/          request/ and response/ records
 ├── security/     JwtUtil, JwtAuthFilter, UserDetailsServiceImpl
-├── enums/        TripStatus, TripStyle, PackingCategory
+├── enums/        TripStatus, TripCategory, DayIntensity, PackingCategory
 └── exception/    GlobalExceptionHandler
 ```
 
-## Anthropic SDK Notes (v0.8.0)
+## OpenAI SDK Notes (v2.1.0)
 
-- Use `Model.of("claude-sonnet-4-6")` — not enum constants (they changed between versions)
-- Content blocks: `block.isText()` and `block.asText().text()` — not instanceof casting
+- Import paths: `com.openai.models.chat.completions.ChatCompletionCreateParams`, `com.openai.models.ChatModel`
+- `StreamResponse<ChatCompletionChunk>` is at `com.openai.core.http.StreamResponse`
+- `client.chat().completions().create(params)` — non-streaming
+- `client.chat().completions().createStreaming(params)` — returns `StreamResponse<ChatCompletionChunk>`
+- `chunk.choices().get(0).delta().content().orElse("")` — extract token delta
+- `maxTokens(Long)` — takes a Long value

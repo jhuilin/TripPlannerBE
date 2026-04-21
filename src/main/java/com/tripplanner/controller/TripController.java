@@ -1,11 +1,17 @@
 package com.tripplanner.controller;
 
+import com.tripplanner.dto.request.TripCreateRequest;
 import com.tripplanner.dto.request.TripStopUpdateRequest;
 import com.tripplanner.dto.response.TripResponse;
+import com.tripplanner.entity.User;
+import com.tripplanner.service.OpenAIService;
 import com.tripplanner.service.TripService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
 
@@ -15,6 +21,15 @@ import java.util.List;
 public class TripController {
 
     private final TripService tripService;
+    private final OpenAIService openAIService;
+
+    @PostMapping(value = "/generate", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter generate(@Valid @RequestBody TripCreateRequest request) {
+        User user = tripService.currentUser();
+        SseEmitter emitter = new SseEmitter(300_000L);
+        Thread.ofVirtual().start(() -> openAIService.generateTripStream(user, request, emitter));
+        return emitter;
+    }
 
     @GetMapping
     public List<TripResponse> getMyTrips() {

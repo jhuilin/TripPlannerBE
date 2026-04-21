@@ -23,8 +23,8 @@ jwt:
   expiration-ms: 900000         # 15 minutes
   refresh-expiration-ms: 2592000000  # 30 days
 
-anthropic:
-  api-key: ${ANTHROPIC_API_KEY}
+openai:
+  api-key: ${OPENAI_API_KEY}
 
 google:
   client-id: ${GOOGLE_CLIENT_ID}

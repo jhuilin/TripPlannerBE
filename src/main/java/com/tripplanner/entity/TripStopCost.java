@@ -25,6 +25,8 @@ public class TripStopCost {
     @Column(precision = 10, scale = 2)
     private BigDecimal intercityTransport;
 
+    private String intercityTransportType;
+
     @Column(precision = 10, scale = 2)
     private BigDecimal localTransport;
 
@@ -39,4 +41,8 @@ public class TripStopCost {
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal total;
+
+    private Integer intercityPublicTransportTimeMins;
+
+    private Integer intercityCarTimeMins;
 }

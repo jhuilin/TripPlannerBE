@@ -4,9 +4,12 @@ import java.math.BigDecimal;
 
 public record TripStopCostResponse(
         BigDecimal intercityTransport,
+        String intercityTransportType,
         BigDecimal localTransport,
         BigDecimal accommodation,
         BigDecimal food,
         BigDecimal activities,
-        BigDecimal total
+        BigDecimal total,
+        Integer intercityPublicTransportTimeMins,
+        Integer intercityCarTimeMins
 ) {}

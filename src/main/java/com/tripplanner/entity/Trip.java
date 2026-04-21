@@ -1,7 +1,8 @@
 package com.tripplanner.entity;
 
+import com.tripplanner.enums.DayIntensity;
+import com.tripplanner.enums.TripCategory;
 import com.tripplanner.enums.TripStatus;
-import com.tripplanner.enums.TripStyle;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -10,6 +11,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -32,8 +34,6 @@ public class Trip {
     @Column(nullable = false)
     private String destination;
 
-    private String departureCity;
-
     @Column(nullable = false)
     private LocalDate startDate;
 
@@ -47,9 +47,16 @@ public class Trip {
     @Builder.Default
     private String currency = "USD";
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "trip_categories", joinColumns = @JoinColumn(name = "trip_id"))
+    @Enumerated(EnumType.STRING)
+    @Column(name = "category")
+    @Builder.Default
+    private List<TripCategory> categories = new ArrayList<>();
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private TripStyle style;
+    private DayIntensity intensity;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
