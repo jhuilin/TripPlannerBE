@@ -1,5 +1,6 @@
 package com.tripplanner.exception;
 
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -13,17 +14,22 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, String>> handleBadRequest(IllegalArgumentException ex) {
-        return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage() != null ? ex.getMessage() : "Bad request"));
+        return ResponseEntity.badRequest().body(Map.of("error", msg(ex, "Bad request")));
     }
 
     @ExceptionHandler(SecurityException.class)
     public ResponseEntity<Map<String, String>> handleForbidden(SecurityException ex) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", ex.getMessage() != null ? ex.getMessage() : "Forbidden"));
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", msg(ex, "Forbidden")));
     }
 
-    @ExceptionHandler(jakarta.persistence.EntityNotFoundException.class)
-    public ResponseEntity<Map<String, String>> handleNotFound(jakarta.persistence.EntityNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", ex.getMessage() != null ? ex.getMessage() : "Not found"));
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleNotFound(EntityNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", msg(ex, "Not found")));
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<Map<String, String>> handleConflict(IllegalStateException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", msg(ex, "Conflict")));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -32,5 +38,9 @@ public class GlobalExceptionHandler {
                 .map(e -> e.getField() + ": " + e.getDefaultMessage())
                 .findFirst().orElse("Validation error");
         return ResponseEntity.badRequest().body(Map.of("error", message));
+    }
+
+    private String msg(Exception ex, String fallback) {
+        return ex.getMessage() != null ? ex.getMessage() : fallback;
     }
 }

@@ -1,6 +1,7 @@
 package com.tripplanner.controller;
 
 import com.tripplanner.dto.request.PackingItemRequest;
+import com.tripplanner.dto.request.PackingRefineRequest;
 import com.tripplanner.dto.response.PackingItemResponse;
 import com.tripplanner.service.PackingService;
 import jakarta.validation.Valid;
@@ -39,5 +40,11 @@ public class PackingController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteItem(@PathVariable Long tripId, @PathVariable Long itemId) {
         packingService.deleteItem(tripId, itemId);
+    }
+
+    @PostMapping("/refine")
+    public List<PackingItemResponse> refine(@PathVariable Long tripId,
+                                            @Valid @RequestBody PackingRefineRequest request) {
+        return packingService.refinePackingList(tripId, request.refinementRequest());
     }
 }

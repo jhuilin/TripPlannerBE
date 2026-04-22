@@ -1,30 +1,20 @@
-package com.tripplanner.dto.response;
+package com.tripplanner.dto.request;
 
 import com.tripplanner.enums.DayIntensity;
 import com.tripplanner.enums.TripCategory;
-import com.tripplanner.enums.TripStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-public record TripResponse(
-        Long id,
-        String destination,
+public record TripUpdateRequest(
         String title,
         String shortDescription,
         LocalDate startDate,
-        LocalDate endDate,
         Integer totalDays,
         BigDecimal budget,
         String currency,
         List<TripCategory> categories,
         DayIntensity intensity,
-        TripStatus status,
-        Integer dayOfTrip,
-        BigDecimal estimatedTotal,
-        List<TripStopResponse> stops,
-        boolean confirmed,
-        int refineCount,
-        int packingRefineCount
+        String additionalInfo
 ) {}

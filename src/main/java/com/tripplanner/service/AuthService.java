@@ -89,7 +89,7 @@ public class AuthService {
     }
 
     private AuthResponse issueTokenPair(User user) {
-        String accessToken = jwtUtil.generateToken(user.getEmail());
+        String accessToken = jwtUtil.generateToken(user.getEmail(), user.getId());
 
         RefreshToken refreshToken = RefreshToken.builder()
                 .user(user)

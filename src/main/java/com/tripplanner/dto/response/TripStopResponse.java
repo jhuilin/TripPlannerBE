@@ -1,6 +1,7 @@
 package com.tripplanner.dto.response;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public record TripStopResponse(
         Long id,
@@ -10,6 +11,8 @@ public record TripStopResponse(
         LocalDate arrivalDate,
         LocalDate departureDate,
         Integer orderIndex,
-        String subPlaces,
-        TripStopCostResponse cost
+        TripStopCostResponse cost,
+        HotelResponse hotel,
+        List<RestaurantResponse> restaurants,
+        List<ItineraryItemResponse> itinerary
 ) {}

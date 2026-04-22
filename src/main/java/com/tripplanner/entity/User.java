@@ -6,7 +6,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -28,12 +27,6 @@ public class User {
 
     @Column(unique = true)
     private String googleId;
-
-    @Column(nullable = true)
-    private String passwordHash;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Trip> trips;
 
     @CreationTimestamp
     private LocalDateTime createdAt;

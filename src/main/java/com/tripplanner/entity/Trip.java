@@ -2,7 +2,6 @@ package com.tripplanner.entity;
 
 import com.tripplanner.enums.DayIntensity;
 import com.tripplanner.enums.TripCategory;
-import com.tripplanner.enums.TripStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -34,6 +33,18 @@ public class Trip {
     @Column(nullable = false)
     private String destination;
 
+    private String title;
+
+    @Column(columnDefinition = "TEXT")
+    private String shortDescription;
+
+    @Column(columnDefinition = "TEXT")
+    private String additionalInfo;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean confirmed = false;
+
     @Column(nullable = false)
     private LocalDate startDate;
 
@@ -58,14 +69,13 @@ public class Trip {
     @Column(nullable = false)
     private DayIntensity intensity;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
-    private TripStatus status = TripStatus.PLANNED;
+    private int refineCount = 0;
 
     @Column(nullable = false)
     @Builder.Default
-    private boolean isPublic = false;
+    private int packingRefineCount = 0;
 
     @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true,
             fetch = FetchType.LAZY)

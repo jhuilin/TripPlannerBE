@@ -2,8 +2,11 @@ package com.tripplanner.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "trip_stops")
@@ -37,10 +40,26 @@ public class TripStop {
     @Column(nullable = false)
     private Integer orderIndex;
 
-    @Column(columnDefinition = "TEXT")
-    private String subPlaces;
-
     @OneToOne(mappedBy = "stop", cascade = CascadeType.ALL, orphanRemoval = true,
             fetch = FetchType.LAZY)
     private TripStopCost cost;
+
+    @OneToMany(mappedBy = "stop", cascade = CascadeType.ALL, orphanRemoval = true,
+            fetch = FetchType.LAZY)
+    @BatchSize(size = 20)
+    @Builder.Default
+    private List<Hotel> hotels = new ArrayList<>();
+
+    @OneToMany(mappedBy = "stop", cascade = CascadeType.ALL, orphanRemoval = true,
+            fetch = FetchType.LAZY)
+    @BatchSize(size = 20)
+    @Builder.Default
+    private List<Restaurant> restaurants = new ArrayList<>();
+
+    @OneToMany(mappedBy = "stop", cascade = CascadeType.ALL, orphanRemoval = true,
+            fetch = FetchType.LAZY)
+    @OrderBy("dayDate ASC, orderIndex ASC")
+    @BatchSize(size = 50)
+    @Builder.Default
+    private List<ItineraryItem> itineraryItems = new ArrayList<>();
 }
