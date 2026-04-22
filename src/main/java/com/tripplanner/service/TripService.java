@@ -63,10 +63,13 @@ public class TripService {
         Trip trip = findOwnedTrip(tripId);
         if (request.title() != null) trip.setTitle(request.title());
         if (request.shortDescription() != null) trip.setShortDescription(request.shortDescription());
-        if (request.startDate() != null) trip.setStartDate(request.startDate());
-        if (request.totalDays() != null) trip.setEndDate(request.startDate() != null
-                ? request.startDate().plusDays(request.totalDays() - 1)
-                : trip.getStartDate().plusDays(request.totalDays() - 1));
+        if (request.startDate() != null || request.totalDays() != null) {
+            LocalDate effectiveStart = request.startDate() != null ? request.startDate() : trip.getStartDate();
+            int effectiveDays = request.totalDays() != null ? request.totalDays()
+                    : (int) (trip.getEndDate().toEpochDay() - trip.getStartDate().toEpochDay()) + 1;
+            trip.setStartDate(effectiveStart);
+            trip.setEndDate(effectiveStart.plusDays(effectiveDays - 1));
+        }
         if (request.budget() != null) trip.setBudget(request.budget());
         if (request.currency() != null) trip.setCurrency(request.currency());
         if (request.categories() != null) trip.setCategories(request.categories());

@@ -45,7 +45,7 @@ public class PackingService {
     @Transactional
     public PackingItemResponse toggleCheck(Long tripId, Long itemId) {
         assertOwnership(tripId);
-        PackingItem item = packingItemRepository.findById(itemId)
+        PackingItem item = packingItemRepository.findByIdAndTripId(itemId, tripId)
                 .orElseThrow(() -> new EntityNotFoundException("Item not found"));
         item.setChecked(!item.isChecked());
         return toResponse(packingItemRepository.save(item));
@@ -54,6 +54,8 @@ public class PackingService {
     @Transactional
     public void deleteItem(Long tripId, Long itemId) {
         assertOwnership(tripId);
+        packingItemRepository.findByIdAndTripId(itemId, tripId)
+                .orElseThrow(() -> new EntityNotFoundException("Item not found"));
         packingItemRepository.deleteById(itemId);
     }
 
