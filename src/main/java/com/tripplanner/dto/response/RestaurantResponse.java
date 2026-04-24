@@ -12,6 +12,5 @@ public record RestaurantResponse(
         Double rating,
         String address,
         Double lat,
-        Double lng,
-        boolean aiSelected
+        Double lng
 ) {}

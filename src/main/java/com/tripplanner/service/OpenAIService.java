@@ -297,17 +297,25 @@ public class OpenAIService {
                 trip.getBudget(), trip.getCurrency(), refinementRequest);
     }
 
-    private List<PackingItemResponse> parsePackingListJson(String json) {
+    private List<PackingItemResponse> parsePackingListJson(String raw) {
+        String json = raw.trim();
+        if (json.startsWith("```")) {
+            json = json.replaceAll("^```[a-z]*\\n?", "").replaceAll("```$", "").trim();
+        }
         try {
             JsonNode root = objectMapper.readTree(json);
             List<PackingItemResponse> results = new ArrayList<>();
             for (JsonNode p : root.path("packingItems")) {
+                PackingCategory category;
+                try {
+                    category = PackingCategory.valueOf(p.path("category").asText("ESSENTIALS").toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    category = PackingCategory.ESSENTIALS;
+                }
+                String itemName = p.path("itemName").asText("").trim();
+                if (itemName.isEmpty()) continue;
                 results.add(new PackingItemResponse(
-                        null,
-                        PackingCategory.valueOf(p.path("category").asText("ESSENTIALS")),
-                        p.path("itemName").asText(),
-                        p.path("quantity").asInt(1),
-                        false));
+                        null, category, itemName, p.path("quantity").asInt(1), false));
             }
             return results;
         } catch (Exception e) {

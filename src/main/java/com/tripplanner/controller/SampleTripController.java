@@ -41,13 +41,13 @@ public class SampleTripController {
         );
 
         HotelResponse tokyoHotel = new HotelResponse(null, null, "Park Hyatt Tokyo",
-                5, new BigDecimal("400.00"), "3-7-1-2 Nishi-Shinjuku, Tokyo", 35.6858, 139.6917, true);
+                5, new BigDecimal("400.00"), "3-7-1-2 Nishi-Shinjuku, Tokyo", 35.6858, 139.6917);
 
         List<RestaurantResponse> tokyoRestaurants = List.of(
                 new RestaurantResponse(null, null, today, "Ichiran Ramen Shinjuku",
-                        "Japanese Ramen", 1, 4.5, "Shinjuku, Tokyo", 35.6921, 139.7006, true),
+                        "Japanese Ramen", 1, 4.5, "Shinjuku, Tokyo", 35.6921, 139.7006),
                 new RestaurantResponse(null, null, today.plusDays(1), "Gonpachi Nishi-Azabu",
-                        "Japanese Izakaya", 3, 4.7, "Nishi-Azabu, Tokyo", 35.6627, 139.7239, true)
+                        "Japanese Izakaya", 3, 4.7, "Nishi-Azabu, Tokyo", 35.6627, 139.7239)
         );
 
         TripStopCostResponse tokyoCost = new TripStopCostResponse(
@@ -70,11 +70,11 @@ public class SampleTripController {
         );
 
         HotelResponse kyotoHotel = new HotelResponse(null, null, "The Thousand Kyoto",
-                5, new BigDecimal("320.00"), "Shijo-Karasuma, Kyoto", 34.9945, 135.7583, true);
+                5, new BigDecimal("320.00"), "Shijo-Karasuma, Kyoto", 34.9945, 135.7583);
 
         List<RestaurantResponse> kyotoRestaurants = List.of(
                 new RestaurantResponse(null, null, today.plusDays(2), "Kikunoi Honten",
-                        "Kaiseki", 3, 4.9, "Higashiyama, Kyoto", 34.9942, 135.7813, true)
+                        "Kaiseki", 3, 4.9, "Higashiyama, Kyoto", 34.9942, 135.7813)
         );
 
         TripStopCostResponse kyotoCost = new TripStopCostResponse(

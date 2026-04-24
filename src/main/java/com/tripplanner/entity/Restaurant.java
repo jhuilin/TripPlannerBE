@@ -40,7 +40,4 @@ public class Restaurant {
 
     private Double lat;
     private Double lng;
-
-    @Builder.Default
-    private boolean aiSelected = false;
 }

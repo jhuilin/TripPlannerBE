@@ -1,6 +1,5 @@
 package com.tripplanner.service;
 
-import com.tripplanner.entity.User;
 import com.tripplanner.entity.WizardDraft;
 import com.tripplanner.repository.WizardDraftRepository;
 import com.tripplanner.security.CurrentUserResolver;

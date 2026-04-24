@@ -10,6 +10,5 @@ public record HotelResponse(
         BigDecimal pricePerNight,
         String address,
         Double lat,
-        Double lng,
-        boolean aiSelected
+        Double lng
 ) {}

@@ -93,7 +93,6 @@ public class TripService {
         }
         if (trip.getStops() != null) trip.getStops().clear();
         if (trip.getPackingItems() != null) trip.getPackingItems().clear();
-        trip.setRefineCount(0);
         trip.setPackingRefineCount(0);
         return tripRepository.saveAndFlush(trip);
     }
@@ -104,6 +103,7 @@ public class TripService {
         Trip trip = findOwnedTrip(tripId, userId);
         if (title != null) trip.setTitle(title);
         if (shortDescription != null) trip.setShortDescription(shortDescription);
+        trip.setRefineCount(trip.getRefineCount() + 1);
         tripRepository.save(trip);
         saveStopsAndPacking(trip, stopJsons, packingJson);
     }
@@ -281,7 +281,6 @@ public class TripService {
                             .address(h.path("address").asText(""))
                             .lat(h.path("lat").isNull() ? null : h.path("lat").asDouble())
                             .lng(h.path("lng").isNull() ? null : h.path("lng").asDouble())
-                            .aiSelected(true)
                             .build());
                 }
 
@@ -299,7 +298,6 @@ public class TripService {
                                     .address(r.path("address").asText(""))
                                     .lat(r.path("lat").isNull() ? null : r.path("lat").asDouble())
                                     .lng(r.path("lng").isNull() ? null : r.path("lng").asDouble())
-                                    .aiSelected(true)
                                     .build());
                         } catch (Exception e) {
                             log.warn("Failed to parse restaurant for stop {}: {}", savedStop.getId(), e.getMessage());
@@ -359,14 +357,14 @@ public class TripService {
         if (hotels != null && !hotels.isEmpty()) {
             Hotel h = hotels.get(0);
             hotelResponse = new HotelResponse(h.getId(), stop.getId(), h.getName(),
-                    h.getStarRating(), h.getPricePerNight(), h.getAddress(), h.getLat(), h.getLng(), h.isAiSelected());
+                    h.getStarRating(), h.getPricePerNight(), h.getAddress(), h.getLat(), h.getLng());
         }
 
         List<RestaurantResponse> restaurantResponses = stop.getRestaurants() == null ? List.of() :
                 stop.getRestaurants().stream()
                         .map(r -> new RestaurantResponse(r.getId(), stop.getId(), r.getDayDate(), r.getName(),
                                 r.getCuisine(), r.getPriceLevel(), r.getRating(), r.getAddress(),
-                                r.getLat(), r.getLng(), r.isAiSelected()))
+                                r.getLat(), r.getLng()))
                         .toList();
 
         List<ItineraryItemResponse> itineraryResponses = stop.getItineraryItems() == null ? List.of() :
